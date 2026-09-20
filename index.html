@@ -1,4 +1,10 @@
-<title>Reaction Chamber</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReactorX — Chemistry you can walk into</title>
+<meta name="description" content="A browser-based 3D and WebXR chemistry lab: pick reactants, balance the equation, watch bonds break and form, and zoom from the whole reaction down to a single atom.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -47,6 +53,8 @@
     display:block; font-family:var(--font-mono); font-size:11px; letter-spacing:0.14em;
     color:var(--accent); text-transform:uppercase; margin-bottom:4px;
   }
+  .tagline{ display:block; margin-top:2px; font-size:12.5px; color:var(--text-dim); }
+  @media (max-width:520px){ .tagline{ display:none; } }
   .brand h1{
     margin:0; font-family:var(--font-display); font-weight:700;
     font-size:clamp(20px,4vw,28px); letter-spacing:-0.01em;
@@ -298,6 +306,8 @@
     .equation-row{ flex-direction:column; align-items:flex-start; }
   }
 </style>
+</head>
+<body>
 
 <div id="app">
   <div id="viewport">
@@ -306,7 +316,8 @@
     <header class="topbar">
       <div class="brand">
         <span class="eyebrow">WebXR Chemistry Lab</span>
-        <h1>Reaction Chamber</h1>
+        <h1>ReactorX</h1>
+        <span class="tagline">Chemistry you can walk into.</span>
       </div>
       <div class="xr-controls">
         <span id="vrStatus" class="vr-status" hidden></span>
@@ -396,13 +407,16 @@
   // number = protons/atomic number, neutrons = count in the most abundant isotope,
   // shells = simplified Bohr-model electron distribution (K, L, M, N...).
   // en = Pauling-scale electronegativity, used to explain bond type on click.
+  // valence = electrons in the outermost shell (for Fe: the 4s pair only — see
+  // the note below), oxidation = common oxidation states, config = ground-state
+  // electron configuration in subshell notation.
   const ELEMENTS = {
-    H:  { color:0xF1F5F9, r:0.32, mass:1.008,  number:1,  neutrons:0,  shells:[1],       en:2.20 },
-    O:  { color:0xF0574B, r:0.55, mass:15.999, number:8,  neutrons:8,  shells:[2,6],     en:3.44 },
-    N:  { color:0x3B82F6, r:0.55, mass:14.007, number:7,  neutrons:7,  shells:[2,5],     en:3.04 },
-    C:  { color:0x4B5567, r:0.58, mass:12.011, number:6,  neutrons:6,  shells:[2,4],     en:2.55 },
-    Cl: { color:0x8FE04E, r:0.75, mass:35.45,  number:17, neutrons:18, shells:[2,8,7],   en:3.16 },
-    Na: { color:0xB072FF, r:0.85, mass:22.990, number:11, neutrons:12, shells:[2,8,1],   en:0.93 },
+    H:  { color:0xF1F5F9, r:0.32, mass:1.008,  number:1,  neutrons:0,  shells:[1],       en:2.20, valence:1, oxidation:[1,-1], config:'1s¹' },
+    O:  { color:0xF0574B, r:0.55, mass:15.999, number:8,  neutrons:8,  shells:[2,6],     en:3.44, valence:6, oxidation:[-2], config:'1s² 2s² 2p⁴' },
+    N:  { color:0x3B82F6, r:0.55, mass:14.007, number:7,  neutrons:7,  shells:[2,5],     en:3.04, valence:5, oxidation:[-3,5], config:'1s² 2s² 2p³' },
+    C:  { color:0x4B5567, r:0.58, mass:12.011, number:6,  neutrons:6,  shells:[2,4],     en:2.55, valence:4, oxidation:[4,-4], config:'1s² 2s² 2p²' },
+    Cl: { color:0x8FE04E, r:0.75, mass:35.45,  number:17, neutrons:18, shells:[2,8,7],   en:3.16, valence:7, oxidation:[-1,7], config:'1s² 2s² 2p⁶ 3s² 3p⁵' },
+    Na: { color:0xB072FF, r:0.85, mass:22.990, number:11, neutrons:12, shells:[2,8,1],   en:0.93, valence:1, oxidation:[1], config:'1s² 2s² 2p⁶ 3s¹' },
     // Fe's last shell (the flat Bohr count) is only 2 (4s^2), but the 3rd
     // shell's 14 also includes 3d^6 — transition metals draw on those d
     // electrons for bonding too, which is why iron reaches Fe3+ (2 from 4s,
@@ -411,8 +425,8 @@
     // instead of just one, so both real rings are visible and the 3rd
     // electron visibly comes from the inner one, not a fabricated combined
     // count on a single ring.
-    Fe: { color:0xC97A3D, r:0.72, mass:55.845, number:26, neutrons:30, shells:[2,8,14,2],en:1.83, bondShellDepth:2 },
-    Mg: { color:0x7FE0A8, r:0.75, mass:24.305, number:12, neutrons:12, shells:[2,8,2],   en:1.31 },
+    Fe: { color:0xC97A3D, r:0.72, mass:55.845, number:26, neutrons:30, shells:[2,8,14,2],en:1.83, valence:2, oxidation:[2,3], config:'1s² 2s² 2p⁶ 3s² 3p⁶ 3d⁶ 4s²', bondShellDepth:2 },
+    Mg: { color:0x7FE0A8, r:0.75, mass:24.305, number:12, neutrons:12, shells:[2,8,2],   en:1.31, valence:2, oxidation:[2], config:'1s² 2s² 2p⁶ 3s²' },
   };
 
   const ATOMIC_NAMES = {
@@ -519,6 +533,43 @@
 
   function findReaction(a, b){
     return REACTIONS.find(r => (r.a===a && r.b===b) || (r.a===b && r.b===a)) || null;
+  }
+
+  const BOND_SYMBOL = { 1:'–', 2:'=', 3:'≡' };
+  // Human-readable list of the distinct bonds in a molecule, e.g. "O=O" or "H–O".
+  function bondList(formula){
+    const def = MOLECULES[formula];
+    const seen = new Set();
+    def.bonds.forEach(([i,j,type,order]) => {
+      const a = def.atoms[i].el, b = def.atoms[j].el;
+      seen.add(type === 'ionic' ? `${a}⋯${b}` : `${a}${BOND_SYMBOL[order||1]}${b}`);
+    });
+    return Array.from(seen);
+  }
+
+  // Oxidation state of every atom in a molecule, derived from its bonds:
+  // each bonded pair's electrons are assigned to the more electronegative atom
+  // (transferred outright for ionic bonds, counted as owned for shared pairs),
+  // and equal-EN pairs (H–H, O=O) contribute nothing — the standard rule.
+  function oxidationStates(formula){
+    const def = MOLECULES[formula];
+    const states = def.atoms.map(() => 0);
+    def.bonds.forEach(([i,j,type,order]) => {
+      const n = order || 1;
+      const enA = ELEMENTS[def.atoms[i].el].en, enB = ELEMENTS[def.atoms[j].el].en;
+      if (enA === enB) return;
+      const lo = enA < enB ? i : j, hi = enA < enB ? j : i;
+      states[lo] += n; states[hi] -= n;
+    });
+    return states;
+  }
+  function formatOxidation(n){ return n === 0 ? '0' : (n > 0 ? '+' : '−') + Math.abs(n); }
+  // One entry per distinct element in the molecule (all atoms of an element
+  // share a state in every molecule in this data set).
+  function oxidationBySymbol(formula){
+    const def = MOLECULES[formula], states = oxidationStates(formula), out = {};
+    def.atoms.forEach((a, k) => { if (!(a.el in out)) out[a.el] = states[k]; });
+    return out;
   }
 
   function parseFormula(f){
@@ -1987,6 +2038,31 @@
   const ANCHOR_P_SINGLE = new THREE.Vector3(3.6, 0.6, 0);
   const ZERO = new THREE.Vector3(0, 0.6, 0);
 
+  // Bond breaking / forming: bond cylinders run along their local Y axis, so
+  // scaling Y shrinks a bond to nothing at its midpoint (and grows it back).
+  function setBondScale(group, s){
+    group.traverse(o => { if (o.userData && o.userData.bondType) o.scale.y = s; });
+  }
+  // Reactants aren't erased once consumed — their atoms became the products —
+  // so they stay in place as translucent ghosts, a record of what went in.
+  const ghostMatCache = new Map();
+  function ghostOf(mat){
+    if (!ghostMatCache.has(mat)) {
+      const g = mat.clone();
+      g.transparent = true; g.opacity = 0.16; g.depthWrite = false;
+      ghostMatCache.set(mat, g);
+    }
+    return ghostMatCache.get(mat);
+  }
+  function ghostGroup(group){
+    group.traverse(o => { if (o.isMesh && !(o.userData && o.userData.bondType)) o.material = ghostOf(o.material); });
+  }
+  function bondCaption(formulas){
+    const list = Array.from(new Set(formulas.flatMap(bondList)));
+    return list.length ? list.join(', ') : 'none (these are single atoms)';
+  }
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+
   const activeBursts = [];
   function spawnBurst(color){
     const geo = new THREE.IcosahedronGeometry(0.5, 1);
@@ -2180,7 +2256,8 @@
       -((clientY-rect.top)/rect.height)*2 + 1
     );
     raycaster.setFromCamera(ndc, camera);
-    const targets = [reactantGroupA, reactantGroupB, ...productGroups];
+    const consumed = current && current.phase === 'done';
+    const targets = [...(consumed ? [] : [reactantGroupA, reactantGroupB]), ...productGroups].filter(g => g.visible);
     const hits = raycaster.intersectObjects(targets, true);
     if (!hits.length) return;
     const bondHit = hits.find(h => h.object.userData && h.object.userData.bondType);
@@ -2192,6 +2269,11 @@
   }
 
   let cardFormula = null;
+
+  function oxidationChips(formula){
+    return Object.entries(oxidationBySymbol(formula))
+      .map(([el, n]) => `<span class="chip" title="Oxidation state of ${ATOMIC_NAMES[el]} in this substance">${el} ${formatOxidation(n)}</span>`).join('');
+  }
 
   function showMoleculeCard(formula){
     cardFormula = formula;
@@ -2205,6 +2287,7 @@
         <span class="chip">${info.category}</span>
         <span class="chip">${bondTypeLabel(formula)}</span>
       </div>
+      <div class="molecule-card-chips" aria-label="Oxidation states">${oxidationChips(formula)}</div>
       <div class="molecule-card-stat"><span>Molar mass</span><strong>${molarMass(formula).toFixed(2)} g/mol</strong></div>
       <p class="molecule-card-fact">${info.fact}</p>
       ${hasBonds ? `<p class="molecule-card-hint">Click a bond in the model to see why it's ${bondTypeLabel(formula).toLowerCase()}.</p>` : ''}
@@ -2223,6 +2306,10 @@
       <div class="molecule-card-chips">
         <span class="chip">${elA} EN ${ELEMENTS[elA].en}</span>
         <span class="chip">${elB} EN ${ELEMENTS[elB].en}</span>
+      </div>
+      <div class="molecule-card-chips">
+        <span class="chip">${elA} valence e⁻ ${ELEMENTS[elA].valence}</span>
+        <span class="chip">${elB} valence e⁻ ${ELEMENTS[elB].valence}</span>
       </div>
       <div class="molecule-card-stat"><span>EN difference</span><strong>${info.diff}</strong></div>
       <p class="molecule-card-fact">${info.body}</p>`;
@@ -2388,6 +2475,11 @@
       <dl class="atom-stats">
         <dt>Atomic number</dt><dd>${el.number}</dd>
         <dt>Shells</dt><dd>${el.shells.join(', ')}</dd>
+        <dt>Configuration</dt><dd>${el.config}</dd>
+        <dt>Valence electrons</dt><dd>${el.valence}</dd>
+        <dt>Electronegativity</dt><dd>${el.en}</dd>
+        <dt>Common oxidation states</dt><dd>${el.oxidation.map(formatOxidation).join(', ')}</dd>
+        <dt>Oxidation state here</dt><dd>${formatOxidation(oxidationBySymbol(currentFormula)[symbol])}</dd>
         <dt>In this molecule</dt><dd>×${detailCounts[symbol]}</dd>
       </dl>
       <p class="particle-body">Click any electron, proton, neutron, or shell ring to learn what it does.</p>
@@ -2448,6 +2540,7 @@
         <span class="chip">${bondTypeLabel(formula)}</span>
         <div class="detail-mini-stat"><span>Molar mass</span><strong>${molarMass(formula).toFixed(2)} g/mol</strong></div>
       </div>
+      <div class="detail-molecule-context" style="border-top:none; padding-top:0;" aria-label="Oxidation states">${oxidationChips(formula)}</div>
       <p class="detail-fact">${info.fact}</p>
       <p class="particle-body">${hasBonds
         ? `Click a bond to see why it's ${bondTypeLabel(formula).toLowerCase()}, or click an atom to explore it up close.`
@@ -2760,6 +2853,10 @@
     current.phase = 'reacting';
     current.reactStart = performance.now();
     current.burstFired = false;
+    current.ghosted = false;
+    current.caption = '';
+    // products start with no bonds; they form during the second half of the reaction
+    productGroups.forEach(g => setBondScale(g, 0));
     reactBtn.disabled = true;
     equationEl.classList.add('pulsing');
   }
@@ -2769,8 +2866,21 @@
   function updateReaction(now){
     if (!current || current.phase !== 'reacting') return;
     const t = now - current.reactStart;
+    const { entry } = current;
+
+    // Caption tells the story of each stage in the HUD.
+    let caption;
+    if (t < 350) caption = 'Reactants collide…';
+    else if (t < 900) caption = `Breaking bonds: ${bondCaption([entry.a, entry.b])}`;
+    else if (t < 1150) caption = 'Atoms rearrange…';
+    else caption = `Forming bonds: ${bondCaption(entry.products)}`;
+    if (t < 2150 && caption !== current.caption) { current.caption = caption; reactionNoteEl.textContent = caption; }
 
     if (t < 900) {
+      // reactant bonds snap while the molecules are still closing in
+      const breakP = ease(clamp01((t-350)/500));
+      setBondScale(reactantGroupA, 1-breakP);
+      setBondScale(reactantGroupB, 1-breakP);
       const p = ease(Math.min(1, t/900));
       reactantGroupA.position.lerpVectors(ANCHOR_A, ZERO, p);
       reactantGroupB.position.lerpVectors(ANCHOR_B, ZERO, p);
@@ -2780,11 +2890,16 @@
       current.burstFired = true;
       spawnBurst(0x2DD4BF);
       reactionLight.intensity = 8;
+      setBondScale(reactantGroupA, 0); setBondScale(reactantGroupB, 0);
+      ghostGroup(reactantGroupA); ghostGroup(reactantGroupB);
+      current.ghosted = true;
     }
 
     if (t >= 900 && t < 2150) {
       reactionLight.intensity = Math.max(0, 8 * (1 - (t-900)/500));
       const p2 = ease(Math.min(1, (t-900)/1250));
+      const formP = ease(clamp01((t-1150)/1000));
+      productGroups.forEach(g => setBondScale(g, formP));
       // Reactants settle back to their spot — they aren't erased, they became the products.
       reactantGroupA.position.lerpVectors(ZERO, ANCHOR_A, p2);
       reactantGroupB.position.lerpVectors(ZERO, ANCHOR_B, p2);
@@ -2799,6 +2914,8 @@
 
     if (t >= 2150) {
       current.phase = 'done';
+      productGroups.forEach(g => setBondScale(g, 1));
+      reactionNoteEl.textContent = entry.note;
       equationEl.classList.remove('pulsing');
       resetBtn.hidden = false;
       // Smoothly settle to a proper fit of the finished result, undoing any
@@ -2917,3 +3034,5 @@
   selectReaction();
 })();
 </script>
+</body>
+</html>
