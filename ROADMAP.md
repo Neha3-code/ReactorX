@@ -6,7 +6,7 @@ Known limitations and the original engineering roadmap are in [SPEC.md](SPEC.md)
 
 ## Already done
 
-- [x] Live public URL on Netlify
+- [x] Live public URL on Netlify: <https://reactor-x.netlify.app/>
 - [x] README and deployment guide
 - [x] Consistent ReactorX branding (title, header, metadata)
 

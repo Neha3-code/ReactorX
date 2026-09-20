@@ -2,6 +2,8 @@
 
 ReactorX is a static site: one [index.html](index.html), no build step and no server code. Netlify only has to serve the files in this repo.
 
+**Live site:** <https://reactor-x.netlify.app/>
+
 ## Netlify settings
 
 | Setting | Value |

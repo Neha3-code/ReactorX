@@ -2,6 +2,8 @@
 
 *Chemistry you can walk into.* A browser-based 3D / WebXR chemistry lab.
 
+**Live demo: <https://reactor-x.netlify.app/>**
+
 Pick two reactants, balance the equation, and watch the reaction happen: molecules collide, bonds break and form, and products appear. Zoom from the whole reaction down to a single atom, and click any bond to see the electron mechanism behind it (ionic transfer, or shared covalent pairs).
 
 The full product description lives in [SPEC.md](SPEC.md). Deployment steps are in [DEPLOYMENT.md](DEPLOYMENT.md), and planned work is in [ROADMAP.md](ROADMAP.md).
