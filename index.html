@@ -2052,12 +2052,12 @@
     group.traverse(o => { if (o.userData && o.userData.bondType) o.scale.y = s; });
   }
   // Reactants aren't erased once consumed — their atoms became the products —
-  // so they stay in place as translucent ghosts, a record of what went in.
+  // so they stay in place as semi-transparent (but still clickable) ghosts, a record of what went in.
   const ghostMatCache = new Map();
   function ghostOf(mat){
     if (!ghostMatCache.has(mat)) {
       const g = mat.clone();
-      g.transparent = true; g.opacity = 0.16; g.depthWrite = false;
+      g.transparent = true; g.opacity = 0.55;
       ghostMatCache.set(mat, g);
     }
     return ghostMatCache.get(mat);
@@ -2301,8 +2301,8 @@
       -((clientY-rect.top)/rect.height)*2 + 1
     );
     raycaster.setFromCamera(ndc, camera);
-    const consumed = current && current.phase === 'done';
-    const targets = [...(consumed ? [] : [reactantGroupA, reactantGroupB]), ...productGroups].filter(g => g.visible);
+    // Reactants stay tappable after the reaction (they're just ghosted), so you can still inspect them.
+    const targets = [reactantGroupA, reactantGroupB, ...productGroups].filter(g => g.visible);
     const hits = raycaster.intersectObjects(targets, true);
     if (!hits.length) return;
     const bondHit = hits.find(h => h.object.userData && h.object.userData.bondType);
