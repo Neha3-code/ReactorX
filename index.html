@@ -337,6 +337,7 @@
     <div class="zoom-controls" id="zoomControls">
       <button id="zoomInBtn" type="button" aria-label="Zoom in">+</button>
       <button id="zoomOutBtn" type="button" aria-label="Zoom out">−</button>
+      <button id="centerViewBtn" type="button" aria-label="Center view" title="Center view (or double-click empty space)">⌖</button>
     </div>
 
     <div class="molecule-card" id="moleculeCard"></div>
@@ -2183,19 +2184,27 @@
   }, { passive:false });
 
   // Double-click / double-tap empty space to bring the whole chamber back into view.
-  canvas.addEventListener('dblclick', () => {
-    if (focusState) return;
+  // Also wired to the "center view" button, which is the discoverable way to recover
+  // after panning/rotating has pushed the reaction off to one side.
+  function centerView(){
+    // Centre on what's actually on screen: with a single product the row runs
+    // from the left reactant to ANCHOR_P_SINGLE, which is not symmetric about x=0.
+    const xs = [ANCHOR_A.x, ANCHOR_B.x, ...productGroups.map(g => g.userData.restAnchor.x)];
+    const centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
+    if (focusState) { focusState = null; moleculeCard.classList.remove('open'); }
     focusTween = {
-      fromTarget: cam.target.clone(), toTarget: new THREE.Vector3(0,0.95,0),
+      fromTarget: cam.target.clone(), toTarget: new THREE.Vector3(centerX,0.95,0),
       fromRadius: cam.radius, toRadius: computeFitRadius(),
       fromTheta: cam.theta, toTheta: 0,
       fromPhi: cam.phi, toPhi: 1.08,
       start: performance.now(), duration: 600,
     };
-  });
+  }
+  canvas.addEventListener('dblclick', () => { if (!focusState) centerView(); });
 
   const zoomInBtn = document.getElementById('zoomInBtn');
   const zoomOutBtn = document.getElementById('zoomOutBtn');
+  document.getElementById('centerViewBtn').addEventListener('click', centerView);
   zoomInBtn.addEventListener('click', () => zoomBy(0.82));
   zoomOutBtn.addEventListener('click', () => zoomBy(1.22));
 
