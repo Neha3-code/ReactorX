@@ -400,7 +400,7 @@
   /* Short screens (a phone on its side): use the full height for the panel and keep the
      suggestion chips on one scrolling row so the message list still has room. */
   @media (max-height: 520px){
-    .ion-panel{ top:12px; bottom:12px; height:auto; min-height:0; }
+    .ion-panel{ top:12px; bottom:var(--ion-bottom,20px); height:auto; min-height:0; }
     .ion-title span{ display:none; }
     .ion-header{ padding:8px 12px; }
     .ion-chips{ flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px; }
@@ -3693,7 +3693,10 @@
     if (!ionLayoutReady) return;
     const detailOpen = detailView.classList.contains('open');
     const hudH = hud.hidden ? 0 : hud.offsetHeight;
-    ionApp.style.setProperty('--ion-bottom', (detailOpen ? 20 : Math.max(hudH + 16, 72)) + 'px');
+    // Netlify's "Powered by Netlify" badge is pinned to the bottom-right corner (about 75px tall
+    // including its margin), so never sit lower than that.
+    const NETLIFY_BADGE_CLEARANCE = 84;
+    ionApp.style.setProperty('--ion-bottom', (detailOpen ? NETLIFY_BADGE_CLEARANCE : Math.max(hudH + 16, NETLIFY_BADGE_CLEARANCE)) + 'px');
     ionApp.classList.toggle('detail-open', detailOpen);
 
     // On desktop the chamber's canvas gives up a strip for the open panel, so the whole reaction
