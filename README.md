@@ -4,7 +4,7 @@
 
 Pick two reactants, balance the equation, and watch the reaction happen: molecules collide, bonds break and form, and products appear. Zoom from the whole reaction down to a single atom, and click any bond to see the electron mechanism behind it (ionic transfer, or shared covalent pairs).
 
-The full product description lives in [SPEC.md](SPEC.md). Deployment steps are in [DEPLOYMENT.md](DEPLOYMENT.md).
+The full product description lives in [SPEC.md](SPEC.md). Deployment steps are in [DEPLOYMENT.md](DEPLOYMENT.md), and planned work is in [ROADMAP.md](ROADMAP.md).
 
 ## Features
 
@@ -86,7 +86,8 @@ ReactorX/
 ├── index.html      # the whole app (markup, styles, scripts)
 ├── SPEC.md         # product and technical specification
 ├── README.md       # this file
-└── DEPLOYMENT.md   # how to deploy to Netlify
+├── DEPLOYMENT.md   # how to deploy to Netlify
+└── ROADMAP.md      # planned features, by priority
 ```
 
 ## Privacy
