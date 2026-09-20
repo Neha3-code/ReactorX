@@ -2,7 +2,7 @@
 
 *Chemistry you can walk into.* An immersive WebXR chemistry lab.
 
-Status: v1.1, derived from `index.html` (single file). Sections marked **Proposed** are not implemented; everything else describes shipped behavior.
+Status: v1.2, derived from `index.html` (single file). Sections marked **Proposed** are not implemented; everything else describes shipped behavior.
 
 ## 1. Overview
 
@@ -18,6 +18,7 @@ ReactorX is a browser-based 3D/WebXR chemistry laboratory. The student picks two
 - show the resulting products;
 - let students zoom from the whole reaction down to a single atom;
 - show atoms as interactive Bohr models with protons, neutrons and electron shells (and quarks inside nucleons);
+- answer questions in a built-in chat assistant, **Ion**, that knows which atom, bond or reaction is on screen;
 - let students click any bond to see the electron mechanism behind it: **ionic** bonds show electrons transferring from metal to nonmetal, **covalent** bonds show shared electron pairs, with single, double and triple bonds shown as one, two or three shared pairs.
 
 The goal is to move from "memorize the diagram" to "explore the mechanism": not just *what* happens, but *why*.
@@ -58,7 +59,7 @@ The app has two full-screen contexts: the **Chamber** (main view) and the **Deta
   - Reaction type chip (Synthesis, Combustion, Oxidation), reaction name, and a short note.
   - Buttons: **⚖ Balance equation**, **⚗ React** (disabled until balanced), **↺ Reset** (shown after a reaction).
   - Legend for covalent vs. ionic bonds and a hint line (click / drag / scroll).
-- **Camera:** orbit by drag, zoom by scroll/pinch or on-screen +/− buttons. Camera auto-fits the chamber to the reactants/products. Changing the reactant pair resets the view.
+- **Camera:** orbit by drag, zoom by scroll/pinch or on-screen +/− buttons, pan by Shift/right/middle drag or two-finger drag. Camera auto-fits the chamber to the reactants/products. Changing the reactant pair resets the view. A **⌖ center view** button (and double-clicking empty space) recenters on the reaction, resets rotation and refits the zoom.
 - **Tagline:** "Chemistry you can walk into." sits under the title (hidden below 520 px width).
 - **Molecule card:** clicking a molecule focuses the camera on it and shows a card (name, category, formula, **oxidation-state chips per element**, molar mass, bond type, fun fact) with a *Learn more →* button and a *Back to chamber* button. Clicking a bond inside a focused molecule shows a bond card (type, both atoms' electronegativity and **valence electron counts**, EN difference, and the explanation of why the bond is ionic or covalent).
 
@@ -69,7 +70,7 @@ The app has two full-screen contexts: the **Chamber** (main view) and the **Deta
 3. Press **React**. Fixed-timing animation, with a caption under the equation for each stage:
    - 0–350 ms *"Reactants collide…"*: reactants converge to the centre and shrink.
    - 350–900 ms *"Breaking bonds: O=O, H–H"*: the reactants' bond cylinders shrink to nothing (the list comes from the reactants' bond data; single atoms such as Na have none to break).
-   - ~900 ms: particle burst and a flash from a point light. Reactant atoms become translucent "ghosts" that stay at their anchors as a record of what went in, since their atoms are now in the products. Ghosts can't be clicked.
+   - ~900 ms: particle burst and a flash from a point light. Reactant atoms become semi-transparent "ghosts" (55% opacity) that stay at their anchors as a record of what went in, since their atoms are now in the products. Ghosts can still be clicked and inspected.
    - 900–1150 ms *"Atoms rearrange…"*: products start to grow in at their rest positions.
    - 1150–2150 ms *"Forming bonds: O–H"*: the products' bonds grow in.
    - After 2150 ms: phase is `done`, the caption reverts to the reaction note, Reset appears, and the camera eases to fit the result.
@@ -104,6 +105,20 @@ Opened with *Learn more →* on a molecule card. Full-screen overlay with a Back
 - On session start, the lab group is repositioned in front of and slightly above the user (`(0, 0.9, −2.4)`) using a `local-floor` reference space. It returns to the origin on session end.
 - If the session fails to start, show a short "VR unavailable here" status message.
 - The HTML HUD and Detail View are not available inside the headset (see §9).
+
+### 2.5 Ion, the lab assistant
+
+A chat assistant that answers questions about whatever the student is looking at. It runs entirely in the browser with scripted, data-driven replies: no backend, no API key, no network call.
+
+- **Entry point:** a floating **Ask Ion** button, bottom-right in both the chamber (above the HUD) and the Detail View. It does not overlap the zoom controls or the info cards.
+- **Panel:** a 340 px side panel on desktop and landscape screens. On desktop the 3D canvas shrinks to sit beside it, so the whole reaction stays visible and interactive; controls on the right edge slide out of its way. On a narrow portrait window it becomes a bottom sheet (max 60% of the height). Escape or ✕ closes it.
+- **Contents:** header ("Ion · your lab assistant"), message list with a three-dot typing indicator (about 600 ms before each reply), a "Talking about:" context label, three suggestion chips, an input with Send, and the footer note "AI can make mistakes. Check with your teacher." Ion's first message greets the student and names what is on screen.
+- **Context tracking:** one shared `assistantContext` object, `{ view, reaction, element, shell, particle, molecule, bond }`, updated from the same hooks that drive the info panels (`selectReaction`, `showMoleculeCard` / `showBondCard`, `showAtom`, `enterBondStory`, and the Bohr scene's state callback). Opening the Detail View saves the chamber's context and restores it on close. The label shows it in plain words, e.g. "Fe₂O₃ · ionic bond".
+- **Suggestion chips** change with the view: an ionic bond offers "Why does sodium give its electron away?", a shell offers "What's a valence electron?", a reaction offers "Why does this need balancing?", and so on.
+- **Answer engine:** keyword scoring over about ten topics (oxidation state, ionic bond, covalent bond, electronegativity, valence, balancing, reactions, subatomic particles, shells, plus greetings and help). Replies are built from `ELEMENTS`, `MOLECULES`, `MOLECULE_INFO`, `REACTIONS`, `bondInfo()` and the derived oxidation states, quoting real values (for example Na 0.93 vs Cl 3.16). Explanations of transition-metal states are derived from the electron configuration (Fe³⁺: the 4s² pair leaves first, then one 3d electron). Replies are at most three sentences and end with a follow-up question where it fits. If the question mentions an element or a state ("Why is iron 3+?"), that takes priority over the current selection.
+- **Swap-in point:** the engine is one call, `ionAnswer(question) → string`, plus `assistantContext`. A live LLM would replace that call and receive the same context.
+
+**Demo script this supports:** open the Na + Cl₂ reaction, click the ionic bond and open Ion (the chip answer cites 0.93 vs 3.16); switch to Fe₂O₃ and ask "Why is iron 3+?"; click a shell in the atom view and ask "What's a valence electron?".
 
 ## 3. Content Model
 
@@ -146,7 +161,7 @@ Lookup is order-independent. Reactant options: H₂, O₂, N₂, CH₄, Na, Cl�
 | F3 | Equation balancing finds the **smallest-total** integer coefficients (1–8) that conserve every element. Formulas are parsed from strings, so balancing is derived from the data, not stored. |
 | F4 | React is only possible from the `balanced` phase. |
 | F5 | The scene shows the balanced coefficient as the number of molecule instances of each species. |
-| F5a | During a reaction, reactant bonds visibly break and product bonds visibly form, with captions naming the bonds, derived from the species data. Consumed reactants remain as non-interactive ghosts. |
+| F5a | During a reaction, reactant bonds visibly break and product bonds visibly form, with captions naming the bonds, derived from the species data. Consumed reactants remain as semi-transparent ghosts that can still be clicked. |
 | F5b | Oxidation states, valence electrons, electronegativity and electron configuration are shown from data (§3.1) on molecule cards, bond cards and the atom panel. |
 | F6 | Clicking a molecule focuses the camera on it (animated) and shows its card. Back returns to the previous view. |
 | F7 | Detail View exposes atom, particle, quark, molecule, and bond levels as in §2.3, with a consistent Back path at each level. |
@@ -155,6 +170,9 @@ Lookup is order-independent. Reactant options: H₂, O₂, N₂, CH₄, Na, Cl�
 | F10 | Formulas are rendered with Unicode subscripts and charges with superscripts. |
 | F11 | The HUD can be hidden to leave the 3D view unobstructed. |
 | F12 | VR entry is offered only when supported, and fails gracefully. |
+| F13 | The camera can be recentered on the whole reaction from a visible control at any time, including after panning, rotating or a focus zoom. |
+| F14 | Ion answers the questions in §2.5 from live app data, never from per-element scripts, so new elements and reactions are covered automatically. Off-topic input gets a polite redirect, never an error. |
+| F15 | On a touch phone held in portrait the app shows a "rotate your phone" screen; it is designed for landscape. |
 
 ## 5. Non-Functional Requirements
 
@@ -164,7 +182,7 @@ Lookup is order-independent. Reactant options: H₂, O₂, N₂, CH₄, Na, Cl�
 - **Accessibility:** buttons have accessible labels, the equation is an `aria-live` region, and text/background contrast is high. Gaps: the 3D content has no text alternative and keyboard operation of the canvas is not supported (see §9).
 - **Visual design:** single dark theme (Space Grotesk / Inter / JetBrains Mono), teal accent, amber for "needs action" states. Deliberately not light/dark adaptive.
 - **Scientific honesty:** simplified models are labelled as such (Bohr shells with a disclaimer, uud/udd quark note). Any new content must not present a simplification as literal fact.
-- **Privacy:** no accounts, cookies, analytics, or network calls beyond loading fonts and Three.js.
+- **Privacy:** no accounts, cookies, analytics, or network calls beyond loading fonts and Three.js. Ion's questions and answers stay in the browser and are not stored.
 
 ## 6. Technical Architecture
 
@@ -179,6 +197,7 @@ Lookup is order-independent. Reactant options: H₂, O₂, N₂, CH₄, Na, Cl�
   - *Scene builders:* `buildMoleculeMesh`, `buildBohrScene`, `buildMoleculeSceneFull`, `buildMoleculeLocator`, `buildBondStoryScene` (covalent/ionic hub-and-spoke), `buildIonicNetworkScene`.
   - *Interaction:* `attachOrbitControls`, main chamber orbit camera, tap/raycast handlers, focus tween.
   - *UI/state:* reaction state machine (`current.phase`), molecule/bond/particle/quark info panels, detail-view lifecycle.
+  - *Assistant (Ion):* `assistantContext` and its setter, the answer engine (`ionAnswer` and per-topic reply builders, delimited by `ION-ENGINE-START/END` markers so it can be extracted for testing), and the chat panel UI.
 - **State:** in-memory only. Nothing is persisted, and there is no URL routing (see §9).
 - **Browser support:** ES2017+ (`async/await`), WebGL 1, WebXR Device API (optional).
 
@@ -217,6 +236,8 @@ Currently there are no automated tests. **Proposed** minimum:
 - Bespoke atom explanations exist only for H and O. Other elements use templated text.
 - Single-file structure makes the code hard to test and review as it grows.
 - Canvas content is not keyboard-accessible and has no text alternatives.
+- Ion is scripted: it covers about ten topics and falls back to a redirect for anything else. It has no memory of earlier messages and does not persist chats.
+- The lab is designed for landscape on phones; portrait shows a rotate prompt, and small-phone layouts are not fully tuned.
 - The CDN dependency means the app does not work offline.
 
 **Proposed roadmap**

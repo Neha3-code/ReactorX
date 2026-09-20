@@ -9,6 +9,9 @@ Known limitations and the original engineering roadmap are in [SPEC.md](SPEC.md)
 - [x] Live public URL on Netlify: <https://reactor-x.netlify.app/>
 - [x] README and deployment guide
 - [x] Consistent ReactorX branding (title, header, metadata)
+- [x] Ion, a scripted AI lab assistant: context-aware chat and suggestion chips that answer from live app data (SPEC §2.5)
+- [x] Center-view button, and reactants stay clickable after a reaction
+- [x] Landscape-only phone experience with a rotate prompt
 
 ## 1. Must-have next
 
@@ -17,7 +20,7 @@ Known limitations and the original engineering roadmap are in [SPEC.md](SPEC.md)
 | **Verify WebXR on a real headset** (Meta Quest Browser) | VR is central to the "chemistry you can walk into" pitch, and today VR shows only the 3D chamber with no controller input. Fix controller / gaze selection and give the HUD an in-headset equivalent. See SPEC §9 item 5. |
 | **First-run onboarding** | A short intro ("pick two reactants, click anything to explore") so a new visitor isn't dropped into a lab with no hint. |
 | **Demo video (60–90 s)** | Show a reaction, an ionic bond transfer, then the atom explorer. Link it from the README. |
-| **Screenshots or a GIF in the README** | The README currently has text only. |
+| **Screenshots or a GIF in the README** | The README currently has text only. Include Ion answering a question. |
 
 ## 2. Education layer
 
@@ -51,7 +54,7 @@ These conflict with the current "no accounts, no network calls" design (SPEC §5
 
 - **Classroom mode.** A teacher shares a code and students join the same lesson.
 - **Teacher dashboard** with class progress and quiz scores. This needs a database and hosting for a backend.
-- **AI lab assistant.** Ask "why does sodium give up its electron?" with context from the atom or bond on screen, plus adaptive hints on wrong quiz answers. This needs an LLM API and a server to hold the key.
+- **Live LLM behind Ion.** Ion already answers from the atom or bond on screen using scripted, data-driven replies. Swapping in a real model means replacing one function (`ionAnswer`) and sending `assistantContext` with the question, which needs an LLM API and a server to hold the key. Adaptive hints on wrong quiz answers would build on this.
 
 ## Suggested order if time is short
 

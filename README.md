@@ -10,6 +10,7 @@ The full product description lives in [SPEC.md](SPEC.md). Deployment steps are i
 
 ## Features
 
+- **Ion, a built-in lab assistant.** Ask "Why does sodium give its electron away?" or "Why is iron 3+?" and get an answer built from the real data for the atom, bond or reaction on screen (no backend or API key)
 - Automatic equation balancing with a balanced / unbalanced badge
 - Animated reactions with a live caption of the bonds breaking and forming
 - Reactants stay visible (semi-transparent) after the reaction and remain clickable
@@ -28,6 +29,20 @@ The full product description lives in [SPEC.md](SPEC.md). Deployment steps are i
 | Zoom | Scroll wheel, or the + / − buttons | Pinch |
 | Recenter and fit everything | ⌖ button, or double-click empty space | ⌖ button |
 | Inspect a molecule / bond | Click it | Tap it |
+| Ask Ion a question | **Ask Ion** button (bottom-right), then type or tap a suggestion | Same |
+
+## Ion, the lab assistant
+
+Ion answers questions about whatever you are looking at. The label above the input shows what it is talking about (for example "Fe₂O₃ · ionic bond"), and the three suggestion chips change with the view.
+
+- Works in the chamber and in the atom / molecule detail view
+- Replies quote live values from the app's data (electronegativity, valence electrons, oxidation states, electron configurations, balanced equations), so new elements and reactions are covered automatically
+- Runs entirely in the browser: no server or API key to set up, and no extra network calls
+- Built so the scripted engine can be swapped for a live LLM later (see [SPEC.md](SPEC.md) §2.5)
+
+Try it: pick Na + Cl₂, react, click the NaCl molecule and its bond, then open Ion and use the first suggestion.
+
+On phones, ReactorX is built for landscape. In portrait it asks you to rotate the device.
 
 ## Tech stack
 

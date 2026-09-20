@@ -42,7 +42,7 @@
 
   #app{ position:relative; height:100%; width:100%; overflow:hidden; display:flex; flex-direction:column; }
   #viewport{ position:relative; flex:1 1 auto; min-height:0; overflow:hidden; }
-  #scene{ position:absolute; inset:0; display:block; touch-action:none; cursor:grab; }
+  #scene{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:grab; }
 
   .topbar{
     position:absolute; top:0; left:0; right:0; z-index:2;
@@ -313,6 +313,132 @@
     .drag-hint{ margin-left:0; width:100%; }
     .equation-row{ flex-direction:column; align-items:flex-start; }
   }
+
+  /* ---- Ion, the lab assistant ---- */
+  #app{ --ion-panel-w:min(340px, 46vw); --ion-gutter:clamp(14px,3vw,26px); }
+  .ion-btn{
+    position:absolute; right:var(--ion-gutter); bottom:var(--ion-bottom,20px); z-index:30;
+    display:inline-flex; align-items:center; gap:8px; padding:11px 16px;
+    border-radius:999px; border:1px solid var(--accent); background:var(--panel-solid);
+    color:var(--accent-strong); font-family:var(--font-body); font-weight:600; font-size:13.5px; cursor:pointer;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    transition:transform .15s ease, opacity .2s ease, bottom .2s ease, filter .15s ease;
+  }
+  .ion-btn:hover{ filter:brightness(1.25); transform:translateY(-2px); }
+  .ion-btn-dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  #app.ion-open .ion-btn{ opacity:0; pointer-events:none; transform:scale(0.9); }
+
+  .ion-panel{
+    position:absolute; right:var(--ion-gutter); bottom:var(--ion-bottom,20px); z-index:31;
+    width:var(--ion-panel-w); height:min(560px, calc(100% - 96px - var(--ion-bottom,20px))); min-height:300px;
+    display:flex; flex-direction:column;
+    background:var(--panel); backdrop-filter:blur(14px);
+    border:1px solid var(--border-strong); border-radius:14px; overflow:hidden;
+    opacity:0; visibility:hidden; pointer-events:none; transform:translateY(14px) scale(0.98); transform-origin:bottom right;
+    transition:opacity .22s ease, transform .22s ease, visibility 0s linear .22s;
+  }
+  .ion-panel.open{
+    opacity:1; visibility:visible; pointer-events:auto; transform:none;
+    transition:opacity .22s ease, transform .22s ease, visibility 0s;
+  }
+  .ion-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border); }
+  .ion-title{ display:flex; flex-direction:column; gap:1px; }
+  .ion-title strong{ font-family:var(--font-display); font-size:15px; }
+  .ion-title span{ font-size:11.5px; color:var(--text-dim); }
+  .ion-close{
+    width:30px; height:30px; border-radius:8px; border:none; background:transparent;
+    color:var(--text-dim); font-size:15px; cursor:pointer;
+  }
+  .ion-close:hover{ background:rgba(255,255,255,0.09); color:var(--text); }
+  .ion-messages{ flex:1 1 auto; min-height:120px; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .ion-msg{
+    max-width:90%; padding:9px 12px; border-radius:12px; font-size:13px; line-height:1.5;
+    overflow-wrap:anywhere; animation:ion-pop .2s ease;
+  }
+  .ion-msg-bot{ align-self:flex-start; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-bottom-left-radius:4px; }
+  .ion-msg-user{ align-self:flex-end; background:var(--accent-soft); border:1px solid rgba(45,212,191,0.35); border-bottom-right-radius:4px; }
+  .ion-typing{ display:inline-flex; gap:4px; padding:13px 14px; }
+  .ion-typing i{ width:6px; height:6px; border-radius:50%; background:var(--text-dim); animation:ion-bounce 1s infinite ease-in-out; }
+  .ion-typing i:nth-child(2){ animation-delay:.15s; }
+  .ion-typing i:nth-child(3){ animation-delay:.3s; }
+  .ion-context{
+    padding:8px 14px 0; border-top:1px solid var(--border);
+    font-family:var(--font-mono); font-size:11px; color:var(--text-dim); overflow-wrap:anywhere;
+  }
+  .ion-chips{ display:flex; flex-wrap:wrap; gap:6px; padding:8px 14px 0; }
+  .ion-chip{
+    font-family:var(--font-body); font-size:12px; line-height:1.3; text-align:left; cursor:pointer;
+    padding:6px 10px; border-radius:999px; border:1px solid var(--border-strong);
+    background:rgba(255,255,255,0.04); color:var(--text);
+  }
+  .ion-chip:hover{ border-color:var(--accent); color:var(--accent-strong); }
+  .ion-form{ display:flex; gap:8px; padding:10px 14px 6px; }
+  .ion-input{
+    flex:1 1 auto; min-width:0; padding:9px 12px; border-radius:9px;
+    border:1px solid var(--border-strong); background:rgba(255,255,255,0.05);
+    color:var(--text); font-family:var(--font-body); font-size:13px;
+  }
+  .ion-input:focus{ outline:none; border-color:var(--accent); }
+  .ion-footer{ margin:0; padding:0 14px 10px; font-size:10.5px; color:var(--text-faint); }
+  @keyframes ion-pop{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+  @keyframes ion-bounce{ 0%,60%,100%{ transform:translateY(0); opacity:.5; } 30%{ transform:translateY(-4px); opacity:1; } }
+  @media (prefers-reduced-motion: reduce){
+    .ion-msg, .ion-typing i{ animation:none; }
+    .ion-panel, .ion-btn{ transition:none; }
+  }
+
+  /* Wide or landscape (desktops, tablets, and phones held sideways): the panel floats over the
+     right edge, so slide the controls that live there out of its way rather than hiding them. */
+  @media (min-width: 701px), (orientation: landscape){
+    .zoom-controls, .molecule-locator, .accuracy-info-btn, .accuracy-popover{ transition:right .22s ease; }
+    #app.ion-open .zoom-controls,
+    #app.ion-open .molecule-locator,
+    #app.ion-open .accuracy-info-btn,
+    #app.ion-open .accuracy-popover{ right:calc(var(--ion-panel-w) + var(--ion-gutter) + 12px); }
+    #app.ion-shrink #scene{ width:calc(100% - var(--ion-panel-w) - var(--ion-gutter) - 12px); }
+  }
+  /* Short screens (a phone on its side): use the full height for the panel and keep the
+     suggestion chips on one scrolling row so the message list still has room. */
+  @media (max-height: 520px){
+    .ion-panel{ top:12px; bottom:12px; height:auto; min-height:0; }
+    .ion-title span{ display:none; }
+    .ion-header{ padding:8px 12px; }
+    .ion-chips{ flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px; }
+    .ion-chip{ white-space:nowrap; flex:0 0 auto; }
+    .ion-form{ padding-top:8px; }
+    .ion-footer{ padding-bottom:6px; }
+  }
+  /* Narrow screens: the molecule and atom info cards dock along the bottom, so the button moves to
+     the right edge (under the Show-panel button, clear of the zoom controls). In the detail view it
+     sits in the header's empty right side, above the locator thumbnail and the info card. */
+  @media (max-width: 700px){
+    .ion-btn{ top:62px; bottom:auto; padding:10px 14px; }
+    #app.detail-open .ion-btn{ top:calc(17px + env(safe-area-inset-top,0px)); }
+  }
+  /* Narrow AND portrait (only a small desktop window, since phones are held sideways): bottom sheet. */
+  @media (max-width: 700px) and (orientation: portrait){
+    .ion-panel{
+      left:0; right:0; bottom:0; width:auto; height:auto; min-height:0; max-height:60%;
+      border-radius:14px 14px 0 0; border-bottom:none; transform-origin:bottom center;
+    }
+    .ion-input{ font-size:16px; }
+  }
+
+  /* ReactorX is built for landscape on phones. In portrait on a touch phone, ask the
+     student to turn the device instead of showing a cramped, unusable lab. */
+  .rotate-notice{ display:none; }
+  @media (orientation: portrait) and (max-width: 700px) and (hover: none) and (pointer: coarse){
+    .rotate-notice{
+      position:fixed; inset:0; z-index:1000; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:14px; padding:24px; text-align:center;
+      background:var(--bg);
+    }
+    .rotate-notice svg{ width:72px; height:72px; color:var(--accent-strong); animation:rotate-hint 2.4s ease-in-out infinite; }
+    .rotate-notice h2{ margin:0; font-family:var(--font-display); font-size:22px; }
+    .rotate-notice p{ margin:0; max-width:280px; font-size:14px; line-height:1.5; color:var(--text-dim); }
+  }
+  @keyframes rotate-hint{ 0%,15%{ transform:rotate(0deg); } 55%,100%{ transform:rotate(-90deg); } }
+  @media (prefers-reduced-motion: reduce){ .rotate-notice svg{ animation:none; transform:rotate(-90deg); } }
 </style>
 </head>
 <body>
@@ -405,6 +531,35 @@
       <span class="drag-hint">Click a molecule for a closer look · drag to rotate · Shift-drag or two-finger drag to move · scroll to zoom · double-click to recenter</span>
     </div>
   </div>
+
+  <button id="ionBtn" class="ion-btn" type="button" aria-controls="ionPanel" aria-expanded="false">
+    <span class="ion-btn-dot" aria-hidden="true"></span>Ask Ion
+  </button>
+  <aside id="ionPanel" class="ion-panel" aria-label="Ion, your lab assistant" aria-hidden="true">
+    <header class="ion-header">
+      <div class="ion-title">
+        <strong>Ion · your lab assistant</strong>
+        <span>Answers from the chemistry on screen</span>
+      </div>
+      <button id="ionClose" class="ion-close" type="button" aria-label="Close assistant">✕</button>
+    </header>
+    <div id="ionMessages" class="ion-messages" role="log" aria-live="polite"></div>
+    <div id="ionContext" class="ion-context"></div>
+    <div id="ionChips" class="ion-chips"></div>
+    <form id="ionForm" class="ion-form" autocomplete="off">
+      <input id="ionInput" class="ion-input" type="text" maxlength="200" placeholder="Ask about what you see…" aria-label="Ask Ion a question">
+      <button id="ionSend" class="btn btn-accent" type="submit">Send</button>
+    </form>
+    <p class="ion-footer">AI can make mistakes. Check with your teacher.</p>
+  </aside>
+</div>
+
+<div class="rotate-notice" id="rotateNotice" role="alert">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/>
+  </svg>
+  <h2>Please rotate your phone</h2>
+  <p>ReactorX works best in landscape. Turn your device sideways to step into the lab.</p>
 </div>
 
 <script>
@@ -542,6 +697,37 @@
 
   function findReaction(a, b){
     return REACTIONS.find(r => (r.a===a && r.b===b) || (r.a===b && r.b===a)) || null;
+  }
+
+  /* ---------------- What the student is looking at (for Ion) ---------------- */
+  // One shared object, updated from the same hooks that already drive the info panels
+  // (selectReaction, showMoleculeCard/showBondCard, showAtom, enterBondStory and the Bohr
+  // scene's state callback). Ion reads it to decide what "this" means in a question.
+  //   view:     'chamber' | 'detail'
+  //   reaction: the REACTIONS entry for the chosen pair, or null
+  //   element:  symbol of the atom open in the detail view, or null
+  //   shell / particle: the shell or subatomic particle picked inside the atom view
+  //   molecule: formula of the focused molecule (or the one open in the detail view)
+  //   bond:     { type, elA, elB, order } for the bond picked, or null
+  const assistantContext = { view:'chamber', reaction:null, element:null, shell:null, particle:null, molecule:null, bond:null };
+  let ionRefresh = null;        // set once Ion's UI exists
+  let ionLayoutReady = false;
+  let ionChamberSnapshot = null;
+  function setAssistantContext(patch){
+    Object.assign(assistantContext, patch);
+    if (ionRefresh) ionRefresh();
+  }
+  // The detail view sits on top of the chamber without touching it, so remember the
+  // chamber's context on the way in and put it back on the way out.
+  function assistantEnterDetail(formula){
+    if (assistantContext.view !== 'detail') ionChamberSnapshot = Object.assign({}, assistantContext);
+    setAssistantContext({ view:'detail', molecule:formula, bond:null, element:null, shell:null, particle:null });
+    updateIonLayout();
+  }
+  function assistantLeaveDetail(){
+    setAssistantContext(Object.assign({}, ionChamberSnapshot || {}, { view:'chamber' }));
+    ionChamberSnapshot = null;
+    updateIonLayout();
   }
 
   const BOND_SYMBOL = { 1:'–', 2:'=', 3:'≡' };
@@ -2331,6 +2517,7 @@
 
   function showMoleculeCard(formula){
     cardFormula = formula;
+    setAssistantContext({ molecule:formula, bond:null });
     const info = MOLECULE_INFO[formula];
     const hasBonds = MOLECULES[formula].bonds.length > 0;
     moleculeCard.innerHTML = `
@@ -2352,6 +2539,7 @@
   }
 
   function showBondCard(bondType, elA, elB, order){
+    setAssistantContext({ bond:{ type:bondType, elA, elB, order:order||1 } });
     const info = bondInfo(bondType, elA, elB, order);
     moleculeCard.innerHTML = `
       <button class="molecule-card-close" type="button" id="bondBackBtn">← ${cardFormula ? toSubscript(cardFormula) : ''} overview</button>
@@ -2400,6 +2588,7 @@
     };
     focusState = null;
     moleculeCard.classList.remove('open');
+    setAssistantContext({ molecule:null, bond:null });
   }
 
   /* ---------------- "Learn more" detail view (Bohr models) ---------------- */
@@ -2577,9 +2766,21 @@
   }
 
   function onAtomStateChange(symbol, state){
-    if (state.mode === 'particle') renderParticlePanel(symbol, state.type, state.isGhost, state);
-    else if (state.mode === 'quark') renderQuarkPanel(state.nucleonType);
-    else renderAtomInfo(symbol);
+    if (state.mode === 'particle') {
+      setAssistantContext({
+        element:symbol, particle:state.type,
+        shell: state.type === 'shell'
+          ? { letter:state.letter, shellIndex:state.shellIndex, isValence:!!state.isValence, electronCount:state.electronCount }
+          : null,
+      });
+      renderParticlePanel(symbol, state.type, state.isGhost, state);
+    } else if (state.mode === 'quark') {
+      setAssistantContext({ particle:state.nucleonType, shell:null });
+      renderQuarkPanel(state.nucleonType);
+    } else {
+      setAssistantContext({ particle:null, shell:null });
+      renderAtomInfo(symbol);
+    }
   }
 
   function renderMoleculeOverviewPanel(){
@@ -2626,7 +2827,9 @@
     disposeActiveMoleculeViewer();
     const bondDef = MOLECULES[currentFormula].bonds.find(([i,j]) =>
       (i === atomIndexA && j === atomIndexB) || (i === atomIndexB && j === atomIndexA));
-    renderMoleculeBondPanel(bondType, elA, elB, bondDef ? (bondDef[3]||1) : 1);
+    const bondOrder = bondDef ? (bondDef[3]||1) : 1;
+    renderMoleculeBondPanel(bondType, elA, elB, bondOrder);
+    setAssistantContext({ bond:{ type:bondType, elA, elB, order:bondOrder }, element:null, shell:null, particle:null });
     if (bondType === 'ionic') {
       // Ionic compounds aren't always a single-donor star (Fe2O3 has two iron
       // donors sharing a bridging oxygen) — pull in the whole connected ionic
@@ -2650,6 +2853,7 @@
     disposeActiveMoleculeViewer();
     disposeActiveBondStory();
     currentSymbol = symbol;
+    setAssistantContext({ element:symbol, shell:null, particle:null, bond:null });
     const el = ELEMENTS[symbol];
     particleCounter.innerHTML =
       `<span><b class="dot-p">${el.number}</b> protons</span> · <span><b class="dot-n">${el.neutrons}</b> neutrons</span> · <span><b class="dot-e">${el.number}</b> electrons</span>`;
@@ -2672,6 +2876,7 @@
     disposeActiveBondStory();
     moleculeLocator.hidden = true;
     particleCounter.innerHTML = '';
+    setAssistantContext({ element:null, shell:null, particle:null, bond:null });
     atomTabs.querySelectorAll('.atom-tab').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.symbol === '__molecule__');
     });
@@ -2707,12 +2912,14 @@
 
     detailView.classList.add('open');
     detailView.setAttribute('aria-hidden', 'false');
+    assistantEnterDetail(formula);
     showAtom(symbols[0]);
   }
 
   function closeDetailView(){
     detailView.classList.remove('open');
     detailView.setAttribute('aria-hidden', 'true');
+    assistantLeaveDetail();
     disposeActiveAtomViewer();
     disposeActiveLocator();
     disposeActiveMoleculeViewer();
@@ -2723,6 +2930,7 @@
 
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
+    if (ionPanel.classList.contains('open')) { closeIon(); return; }
     if (detailView.classList.contains('open')) closeDetailView();
     else exitFocus();
   });
@@ -2840,6 +3048,7 @@
     reactantGroupA.position.copy(ANCHOR_A); reactantGroupB.position.copy(ANCHOR_B);
 
     const entry = findReaction(a, b);
+    setAssistantContext({ reaction:entry, molecule:null, bond:null, element:null, shell:null, particle:null });
     resetBtn.hidden = true;
     reactBtn.disabled = true;
 
@@ -3047,7 +3256,8 @@
   }
 
   function resize(){
-    const w = viewport.clientWidth, h = viewport.clientHeight;
+    // The canvas can be narrower than the viewport (Ion's side panel takes a strip of it).
+    const w = canvas.clientWidth || viewport.clientWidth, h = canvas.clientHeight || viewport.clientHeight;
     camera.aspect = w / (h || 1);
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
@@ -3056,6 +3266,7 @@
     if (activeLocator) activeLocator.resize();
     if (activeMoleculeViewer) activeMoleculeViewer.resize();
     if (activeBondStory) activeBondStory.resize();
+    updateIonLayout();
   }
   window.addEventListener('resize', resize);
   resize();
@@ -3096,6 +3307,481 @@
     if (activeBondStory) activeBondStory.update(now, dt);
   }
   renderer.setAnimationLoop(animate);
+
+  /* ---------------- Ion: scripted lab assistant ---------------- */
+  // Ion answers from the same data the rest of the app draws from (ELEMENTS, MOLECULES,
+  // MOLECULE_INFO, bondInfo(), oxidationBySymbol()) rather than from per-element scripts, so any
+  // element or reaction added to that data is covered automatically. The whole engine is one
+  // call, ionAnswer(question) -> string, plus assistantContext for "what is on screen" —
+  // exactly the two inputs a live LLM would need, so it can replace ionAnswer() later.
+
+  // ION-ENGINE-START
+  const SUP_CH = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+  const sup = n => String(n).replace(/\d/g, d => SUP_CH[d]);
+  const unsup = s => s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, c => SUP_CH.indexOf(c));
+  const ionSymbol = (el, n) => el + (Math.abs(n) > 1 ? sup(Math.abs(n)) : '') + (n > 0 ? '⁺' : '⁻');
+  const nameOf = el => ATOMIC_NAMES[el];
+  const lowName = el => ATOMIC_NAMES[el].toLowerCase();
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+  const enGap = (a, b) => Math.abs(ELEMENTS[a].en - ELEMENTS[b].en).toFixed(2);
+  const elementsOf = formula => Array.from(new Set(MOLECULES[formula].atoms.map(a => a.el)));
+  const sumCounts = list => list.reduce((acc, f) => {
+    Object.entries(parseFormula(f)).forEach(([el, n]) => { acc[el] = (acc[el] || 0) + n; });
+    return acc;
+  }, {});
+  const formulaList = (list, coeffs, offset) => list
+    .map((f, i) => { const c = coeffs ? coeffs[i + offset] : 1; return (c > 1 ? c : '') + toSubscript(f); })
+    .join(' + ');
+  const equationText = (entry, coeffs) => `${formulaList([entry.a, entry.b], coeffs, 0)} → ${formulaList(entry.products, coeffs, 2)}`;
+
+  // Subshells from the config string, e.g. Fe -> { s:{n:4,e:2}, d:{n:3,e:6}, ... } (last one wins,
+  // so s is the outermost s subshell).
+  function configParts(el){
+    const re = /(\d)([spdf])([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, out = {};
+    let m;
+    while ((m = re.exec(el.config))) out[m[2]] = { n:+m[1], e:+unsup(m[3]) };
+    return out;
+  }
+
+  // Which elements the student mentioned, in the order they appear. Names match whole words
+  // ("environment" does not contain iron); symbols are case-sensitive ("Na", "Fe").
+  function elementsInText(text){
+    const hits = [];
+    Object.keys(ELEMENTS).forEach(sym => {
+      const byName = new RegExp(`\\b${ATOMIC_NAMES[sym]}\\b`, 'i').exec(text);
+      const bySym = new RegExp(`\\b${sym}\\b`).exec(text);
+      const at = [byName, bySym].filter(Boolean).map(m => m.index);
+      if (at.length) hits.push({ sym, at:Math.min(...at) });
+    });
+    return hits.sort((x, y) => x.at - y.at).map(h => h.sym);
+  }
+
+  // "3+", "2-", "+3" typed by the student -> a signed number (else null).
+  function wantedState(text){
+    let m = /(\d)([+−])(?![A-Za-z0-9])/.exec(text);
+    if (m) return (m[2] === '+' ? 1 : -1) * +m[1];
+    m = /(?:^|\s)([+−])(\d)\b/.exec(text);
+    if (m) return (m[1] === '+' ? 1 : -1) * +m[2];
+    m = /(\d)-(?=\s|\?|$)/.exec(text);
+    return m ? -m[1] : null;
+  }
+
+  function contextElements(){
+    const c = assistantContext;
+    if (c.element) return [c.element];
+    if (c.bond) return [c.bond.elA, c.bond.elB];
+    if (c.molecule) return elementsOf(c.molecule);
+    if (c.reaction) return Array.from(new Set([c.reaction.a, c.reaction.b, ...c.reaction.products].flatMap(elementsOf)));
+    return [];
+  }
+
+  function bondsOf(formula){
+    const def = MOLECULES[formula];
+    return def.bonds.map(([i, j, type, order]) => ({ formula, type, elA:def.atoms[i].el, elB:def.atoms[j].el, order:order || 1 }));
+  }
+  const allBonds = () => Object.keys(MOLECULES).flatMap(bondsOf);
+
+  // The bond a question is about: whatever is on screen first (the picked bond, then the
+  // focused molecule's bonds, then the reaction's), narrowed to a mentioned element when there
+  // is one. Only with nothing on screen does it reach for an example from the whole data set.
+  function findBond(text, kind){
+    const c = assistantContext, mentioned = elementsInText(text);
+    const onScreen = [
+      c.bond ? [Object.assign({ formula:c.molecule }, c.bond)] : [],
+      c.molecule ? bondsOf(c.molecule) : [],
+      c.reaction ? [...c.reaction.products, c.reaction.a, c.reaction.b].flatMap(bondsOf) : [],
+    ];
+    const search = (tiers, useMention, wantKind) => {
+      for (const tier of tiers) {
+        const hit = tier.find(b => (!useMention || mentioned.includes(b.elA) || mentioned.includes(b.elB)) && (!wantKind || b.type === wantKind));
+        if (hit) return hit;
+      }
+      return null;
+    };
+    return (mentioned.length && search(onScreen, true, null)) || search(onScreen, false, null)
+      || (mentioned.length && kind && search([allBonds()], true, kind)) || (kind && search([allBonds()], false, kind))
+      || (mentioned.length && search([allBonds()], true, null)) || search([allBonds()], false, null);
+  }
+
+  // A textbook-clear bond of the given kind (ionic: any; covalent: noticeably polar), to compare against.
+  function exampleBond(kind, not){
+    return allBonds().find(b => b.type === kind && (kind === 'ionic' || Number(enGap(b.elA, b.elB)) >= 0.4)
+      && !(not && ((b.elA === not.elA && b.elB === not.elB) || (b.elA === not.elB && b.elB === not.elA))));
+  }
+
+  function partnerOf(formula, el){
+    const def = MOLECULES[formula];
+    const partners = def.bonds.flatMap(([i, j, type]) => {
+      const a = def.atoms[i].el, b = def.atoms[j].el;
+      if (a === el && b !== el) return [{ el:b, type }];
+      if (b === el && a !== el) return [{ el:a, type }];
+      return [];
+    });
+    partners.sort((x, y) => Math.abs(ELEMENTS[y.el].en - ELEMENTS[el].en) - Math.abs(ELEMENTS[x.el].en - ELEMENTS[el].en));
+    return partners[0] || null;
+  }
+
+  const ionFallback = () =>
+    `I'm still learning, so I stick to what's on your screen — bonds, electrons, shells, oxidation states and balancing. Try one of the suggestions below, or ask about the atom, bond or reaction you're looking at!`;
+
+  function ionBondReply(text, kind){
+    const b = findBond(text, kind);
+    if (!b) return ionFallback();
+    const info = bondInfo(b.type, b.elA, b.elB, b.order);
+    const [lo, hi] = ELEMENTS[b.elA].en <= ELEMENTS[b.elB].en ? [b.elA, b.elB] : [b.elB, b.elA];
+    const gap = Number(info.diff);
+
+    if (kind && b.type !== kind) {
+      const ex = exampleBond(kind, b);
+      const exLine = ex ? ` For a real ${kind} example, look at ${ex.elA}–${ex.elB}: ${ELEMENTS[ex.elA].en} vs ${ELEMENTS[ex.elB].en}, a gap of ${enGap(ex.elA, ex.elB)}.` : '';
+      return `The ${b.elA}–${b.elB} bond here is actually ${b.type}, not ${kind}: ${lo} (${ELEMENTS[lo].en}) vs ${hi} (${ELEMENTS[hi].en}) is a gap of ${info.diff}, ${b.type === 'ionic' ? 'too big for the atoms to share' : 'too small for either atom to take electrons outright'}.${exLine} Want me to explain why?`;
+    }
+
+    if (b.type === 'ionic') {
+      const states = b.formula ? oxidationBySymbol(b.formula) : {};
+      const nLo = Math.abs(states[lo]) || b.order, nHi = Math.abs(states[hi]) || b.order;
+      return `${nameOf(lo)} (electronegativity ${ELEMENTS[lo].en}) pulls far less on electrons than ${lowName(hi)} (${ELEMENTS[hi].en}) — a gap of ${info.diff}, too big to share. So ${lowName(lo)} gives ${nLo === 1 ? 'its electron' : nLo + ' electrons'} away to ${lowName(hi)}, becoming ${ionSymbol(lo, nLo)} while ${lowName(hi)} becomes ${ionSymbol(hi, -nHi)}. Curious how that differs from a covalent bond, where the atoms share instead?`;
+    }
+
+    const n = b.order, polar = gap >= 0.4;
+    const pairs = n === 1 ? 'one pair' : n === 2 ? 'two pairs' : 'three pairs';
+    const s1 = b.elA === b.elB
+      ? `Both ${lowName(b.elA)} atoms have the same electronegativity (${ELEMENTS[b.elA].en}), so neither can pull an electron away — they share instead.`
+      : `${nameOf(lo)} (electronegativity ${ELEMENTS[lo].en}) and ${lowName(hi)} (${ELEMENTS[hi].en}) differ by only ${info.diff}, so neither can pull an electron away — they share instead.`;
+    const s2 = `They share ${pairs} of electrons (${n === 1 ? 'a single' : n === 2 ? 'a double' : 'a triple'} bond)${polar
+      ? `, but ${lowName(hi)} pulls harder, so the pair sits closer to it and ${lowName(hi)} ends up slightly negative.`
+      : ', and because the pull is so even, the sharing is almost perfectly balanced.'}`;
+    return `${s1} ${s2} ${polar ? `Which atom do you think ends up slightly positive?` : `How many electrons does each atom bring to the bond?`}`;
+  }
+
+  function ionOxidationReply(text){
+    const c = assistantContext, mentioned = elementsInText(text), want = wantedState(text);
+    let el = mentioned[0] || c.element;
+    if (!el && c.bond) el = ELEMENTS[c.bond.elA].en <= ELEMENTS[c.bond.elB].en ? c.bond.elA : c.bond.elB;
+    if (!el && c.molecule) { const st = oxidationBySymbol(c.molecule); el = elementsOf(c.molecule).find(e => st[e] !== 0); }
+    if (!el) el = contextElements()[0];
+    if (!el) return `An oxidation state is the charge an atom would have if every bond were fully ionic. Click an atom or a molecule and ask me again — I'll work it out from its real bonds.`;
+
+    const e = ELEMENTS[el], name = nameOf(el), lname = lowName(el);
+    const common = e.oxidation.map(formatOxidation).join(' and ');
+    const holds = f => MOLECULES[f].atoms.some(a => a.el === el);
+    const pool = [c.molecule, ...(c.reaction ? [...c.reaction.products, c.reaction.a, c.reaction.b] : []), ...Object.keys(MOLECULES)].filter(f => f && holds(f));
+    const formula = (want !== null && pool.find(f => oxidationBySymbol(f)[el] === want)) || pool[0];
+    if (!formula) return `${name}'s common oxidation states are ${common}. Click a molecule that contains it and I'll show you why.`;
+
+    const state = oxidationBySymbol(formula)[el], F = toSubscript(formula), def = MOLECULES[formula];
+    const other = elementsOf(formula).find(x => x !== el);
+    const closer = other ? `Want to check what ${lowName(other)} ends up as in ${F}?` : `Want to compare it with a compound?`;
+
+    if (state === 0) {
+      return `In ${F}, ${lname} is 0 — ${def.bonds.length ? 'it is only bonded to identical atoms, so neither side pulls harder' : 'a lone element has no partner to trade electrons with'}. In compounds ${lname} usually shows ${common}; which one would you like to look at?`;
+    }
+
+    const p = partnerOf(formula, el);
+    const ionic = def.bonds.some(([i, j, type]) => type === 'ionic' && (def.atoms[i].el === el || def.atoms[j].el === el));
+    const nEl = plural(Math.abs(state), 'electron');
+    const lead = want !== null && state !== want ? `${name} isn't ${formatOxidation(want)} in ${F} — it's ${formatOxidation(state)}` : `In ${F}, ${lname} is ${formatOxidation(state)}`;
+    const vs = p ? `(${e.en} vs ${ELEMENTS[p.el].en})` : '';
+
+    if (state > 0) {
+      const s1 = `${lead}: ${ionic ? `it hands over ${nEl} to` : 'its shared electrons count as belonging to'} the more electronegative ${p ? lowName(p.el) : 'partner'} ${vs}.`;
+      const cp = configParts(e);
+      let s2;
+      if (cp.s && cp.d && cp.d.e > 0 && cp.d.e < 10) {
+        const extra = Math.max(0, state - cp.s.e), sShell = `${cp.s.n}s${sup(cp.s.e)}`, dShell = `${cp.d.n}d${sup(cp.d.e)}`;
+        s2 = extra > 0
+          ? `The ${sShell} pair leaves first, then ${extra} more ${extra === 1 ? 'comes' : 'come'} from the ${dShell} subshell — those d electrons sit so close in energy to ${cp.s.n}s that ${lname} can spend them too, which is why its common states are ${common}.`
+          : `Only the ${sShell} pair leaves here, but ${lname} can also spend a ${cp.d.n}d electron from its ${dShell} subshell — which is why its common states are ${common}.`;
+      } else if (state === e.valence) {
+        s2 = `That empties its outer shell (${plural(e.valence, 'valence electron')}), ${e.shells.length === 1 ? 'leaving just a bare nucleus' : 'exposing the stable full shell underneath'}.`;
+      } else {
+        s2 = `${name} has ${plural(e.valence, 'valence electron')}, so a state of ${formatOxidation(state)} reaches beyond its outer shell.`;
+      }
+      return `${s1} ${s2} ${closer}`;
+    }
+
+    const s1 = `${lead}: ${ionic ? `it gains ${nEl} from` : `it pulls ${nEl} closer from`} the less electronegative ${p ? lowName(p.el) : 'partner'} ${vs}.`;
+    const s2 = `Starting with ${plural(e.valence, 'valence electron')}, ${Math.abs(state)} more brings its outer shell to ${e.valence + Math.abs(state)} — a full, stable shell.`;
+    return `${s1} ${s2} ${closer}`;
+  }
+
+  function ionValenceReply(text){
+    const c = assistantContext, el = elementsInText(text)[0] || c.element || contextElements()[0];
+    const def = `A valence electron is one in an atom's outermost occupied shell — the ones that actually take part in bonding.`;
+    if (!el) return `${def} Click an atom and ask me again — I'll use its real electron counts.`;
+    const e = ELEMENTS[el], name = nameOf(el), v = e.valence, cp = configParts(e);
+    const sh = c.shell && c.element === el ? c.shell : null;
+    const s1 = sh
+      ? (sh.isValence
+        ? `That ring is ${lowName(el)}'s valence shell — its outermost occupied level, holding ${plural(sh.electronCount, 'valence electron')} — the electrons that take part in bonding.`
+        : `That's an inner shell (${plural(sh.electronCount, 'electron')}): held tight and shielded, so it doesn't bond — valence electrons live in the outermost shell.`)
+      : def;
+    const tendency = e.shells.length === 1 ? `tends to gain ${2 - v} more or share`
+      : v <= 3 ? `tends to give ${v === 1 ? 'it' : 'them'} away`
+      : v === 4 ? 'usually shares electrons'
+      : `tends to gain ${8 - v} more or share`;
+    const dNote = e.bondShellDepth > 1 && cp.d ? `, though its ${cp.d.n}d electrons can join in too` : '';
+    return `${s1} ${name} has ${plural(v, 'valence electron')} (${e.shells.join('-')}), so it ${tendency}${dNote}. Which ring in the atom view holds ${lowName(el)}'s valence electrons?`;
+  }
+
+  function ionElectronegativityReply(text){
+    const c = assistantContext;
+    const mentioned = elementsInText(text);
+    const known = Array.from(new Set([...mentioned, ...(c.bond ? [c.bond.elA, c.bond.elB] : []), ...(c.element ? [c.element] : [])]));
+    const byEn = Object.keys(ELEMENTS).sort((x, y) => ELEMENTS[x].en - ELEMENTS[y].en);
+    const lo = byEn[0], hi = byEn[byEn.length - 1];
+    const def = `Electronegativity (Pauling scale) measures how strongly an atom pulls on shared electrons.`;
+    if (known.length >= 2) {
+      const [a, b] = known;
+      const [weak, strong] = ELEMENTS[a].en <= ELEMENTS[b].en ? [a, b] : [b, a];
+      const gap = Number(enGap(a, b));
+      return `${def} ${nameOf(weak)} scores ${ELEMENTS[weak].en} and ${lowName(strong)} ${ELEMENTS[strong].en}, a gap of ${enGap(a, b)} — ${gap >= 1.7 ? 'wide enough that electrons are transferred (ionic)' : gap >= 0.4 ? 'enough for a polar bond, but still shared' : 'so small that the electrons are shared almost evenly'}. Can you guess which way the electrons drift?`;
+    }
+    if (known.length === 1) {
+      const a = known[0];
+      return `${def} ${nameOf(a)} scores ${ELEMENTS[a].en}, on a scale that runs from ${lowName(lo)} (${ELEMENTS[lo].en}) to ${lowName(hi)} (${ELEMENTS[hi].en}). Click a bond to see it compared with a partner!`;
+    }
+    return `${def} In this lab it runs from ${lowName(lo)} (${ELEMENTS[lo].en}) up to ${lowName(hi)} (${ELEMENTS[hi].en}), and the gap between two atoms decides whether they share or transfer electrons. Click a bond and I'll compare a real pair!`;
+  }
+
+  function ionBalancingReply(){
+    const r = assistantContext.reaction || findReaction(selA.value, selB.value) || REACTIONS[0];
+    const left = sumCounts([r.a, r.b]), right = sumCounts(r.products);
+    const off = Object.keys(left).find(el => left[el] !== right[el]);
+    const solved = balanceEquation([r.a, r.b], r.products);
+    const eq = equationText(r, null);
+    const s2 = off
+      ? `In ${eq}, ${lowName(off)} shows up ${left[off]}× on the left but ${right[off]}× on the right${solved ? ` — the balanced version is ${equationText(r, solved.coeffs)}` : ''}.`
+      : `${eq} is already balanced — every element matches on both sides.`;
+    return `Atoms can't be created or destroyed, so every element has to appear the same number of times on both sides. ${s2} ${off ? 'Press ⚖ Balance equation and watch the coefficients settle!' : 'Try another pair to see a lopsided one.'}`;
+  }
+
+  function ionReactionReply(text){
+    const r = assistantContext.reaction;
+    if (!r) return `Pick two reactants in the panel, then Balance and React — I'll walk you through which bonds break and form.`;
+    const eq = equationText(r, current && current.coeffs);
+    if (/\bbreak|\bform/i.test(text)) {
+      return `In ${eq}, bonds broken: ${bondCaption([r.a, r.b])}; bonds formed: ${bondCaption(r.products)}. That swap is what makes ${r.name.toLowerCase()} a ${r.type.toLowerCase()} reaction. ${r.note}`;
+    }
+    return `${r.name} is a ${r.type.toLowerCase()} reaction: ${eq}. ${r.note} Want to know which bonds break and form?`;
+  }
+
+  function ionSubatomicReply(text){
+    const c = assistantContext, el = elementsInText(text)[0] || c.element || contextElements()[0];
+    const lines = {
+      proton:`Protons carry +1 charge, and how many an atom has — its atomic number — decides which element it is.`,
+      neutron:`Neutrons carry no charge; they add mass and help hold the nucleus together.`,
+      electron:`Electrons carry −1 charge and sit in shells around the nucleus; they are what bonds are made of.`,
+    };
+    const s1 = lines[c.particle] || `Every atom is built from protons (+, in the nucleus), neutrons (no charge, also in the nucleus) and electrons (−, in shells around it).`;
+    if (!el) return `${s1} Click an atom and I'll give you its real counts.`;
+    const e = ELEMENTS[el];
+    return `${s1} ${nameOf(el)} has ${e.number} protons, ${e.neutrons} neutrons and ${e.number} electrons (${e.shells.join('-')}), so its mass number is ${e.number + e.neutrons}. Curious what's inside a proton? Click one in the atom view.`;
+  }
+
+  function ionShellsReply(text){
+    const c = assistantContext, el = elementsInText(text)[0] || c.element || contextElements()[0];
+    const s1 = `Electrons live in shells — energy levels around the nucleus that fill from the inside out.`;
+    if (!el) return `${s1} Click an atom and I'll show you how its own electrons are arranged.`;
+    const e = ELEMENTS[el], sh = c.shell && c.element === el ? c.shell : null;
+    const picked = sh ? ` The ${sh.letter} shell you picked holds ${plural(sh.electronCount, 'electron')}${sh.isValence ? ' and is the valence shell' : ''}.` : '';
+    return `${s1} ${nameOf(el)} arranges its electrons ${e.shells.join('-')} across ${plural(e.shells.length, 'shell')} (${e.config}); the outermost one is its valence shell.${picked} Which shell do you think does the bonding?`;
+  }
+
+  const ION_TOPICS = [
+    { id:'oxidation', reply:ionOxidationReply, patterns:[[/oxidation (state|number)/i, 4], [/oxidi[sz]/i, 2], [/\d[+−-](?![A-Za-z0-9])|(?:^|\s)[+−]\d\b/, 3]] },
+    { id:'ionic', reply:t => ionBondReply(t, 'ionic'), patterns:[[/ionic|\bions?\b|cation|anion/i, 3], [/(give|gives|giving|lose|loses|losing|donat\w*|transfer\w*|hand\w* over|gain|gains|take|takes).{0,25}electron|electron.{0,25}(away|transfer)/i, 3]] },
+    { id:'covalent', reply:t => ionBondReply(t, 'covalent'), patterns:[[/covalent|\bshar(e|es|ed|ing)\b|single bond|double bond|triple bond/i, 3]] },
+    { id:'electronegativity', reply:ionElectronegativityReply, patterns:[[/electronegativ|\bEN\b|pauling|\bpulls?\b/i, 3]] },
+    { id:'valence', reply:ionValenceReply, patterns:[[/valence|outer(most)?\s+(shell|electron)/i, 3], [/inner shell|take part in bonding|participate/i, 3]] },
+    { id:'balancing', reply:ionBalancingReply, patterns:[[/balanc|coefficient|conservation|same number of atoms/i, 3]] },
+    { id:'reaction', reply:ionReactionReply, patterns:[[/react(ion|s|ants?)?\b|synthesis|combustion|products?\b/i, 2], [/\bbreak|\bform(s|ed|ing)?\b/i, 3]] },
+    { id:'subatomic', reply:ionSubatomicReply, patterns:[[/proton|neutron|electron|nucleus|nucleon|isotope|atomic number|mass number|quark/i, 1.5]] },
+    { id:'shells', reply:ionShellsReply, patterns:[[/shell|energy level|orbit|subshell|configuration|orbital|\brings?\b/i, 3]] },
+    { id:'bond', reply:t => ionBondReply(t, null), patterns:[[/\bbond(s|ed|ing)?\b/i, 1]] },
+    { id:'greeting', reply:() => `Hi! Ask me about whatever is on screen — an atom, a bond or a reaction — or tap one of the suggestions below.`, patterns:[[/^\s*(hi|hello|hey|hiya|good (morning|afternoon|evening))\b/i, 5]] },
+    { id:'thanks', reply:() => `Happy to help! Click another atom or bond and ask me about that one too.`, patterns:[[/\b(thanks|thank you|thx|cool|awesome|great)\b/i, 4]] },
+    { id:'help', reply:() => `I can explain what's on screen: why atoms form ionic or covalent bonds, valence electrons, shells, oxidation states and balancing. What would you like to know?`, patterns:[[/\bhelp\b|what can you|what do you (do|know)/i, 4]] },
+  ];
+
+  function ionAnswer(text){
+    const q = text.trim();
+    let best = null, bestScore = 0;
+    ION_TOPICS.forEach(t => {
+      const score = t.patterns.reduce((sum, [re, w]) => sum + (re.test(q) ? w : 0), 0);
+      if (score > bestScore) { best = t; bestScore = score; }
+    });
+    try { return best ? best.reply(q) : ionFallback(); }
+    catch (err) { return ionFallback(); }   // never surface an error to the student
+  }
+
+  // What the student is looking at, in plain words.
+  function ionSceneSummary(){
+    const c = assistantContext, f = c.molecule ? toSubscript(c.molecule) : null;
+    if (c.bond) return `the ${c.bond.elA}–${c.bond.elB} ${c.bond.type} bond${f ? ' in ' + f : ''}`;
+    if (c.shell && c.element) return `${lowName(c.element)}'s ${c.shell.isValence ? 'valence' : 'inner'} shell`;
+    if (c.element) return `${lowName(c.element)}${f && MOLECULES[c.molecule].atoms.length > 1 ? ' inside ' + f : ''}`;
+    if (c.molecule) return `${f} (${MOLECULE_INFO[c.molecule].name.toLowerCase()})`;
+    if (c.reaction) return `the reaction ${equationText(c.reaction, null)}`;
+    return 'the reaction chamber';
+  }
+
+  // Short label shown above the input, e.g. "Fe₂O₃ · ionic bond".
+  function ionContextLabel(){
+    const c = assistantContext, parts = [];
+    const f = c.molecule && MOLECULES[c.molecule].atoms.length > 1 ? toSubscript(c.molecule) : null;
+    if (c.bond) { if (f) parts.push(f); parts.push(`${c.bond.type} bond`); }
+    else if (c.shell && c.element) { if (f) parts.push(f); parts.push(lowName(c.element), c.shell.isValence ? 'valence shell' : 'inner shell'); }
+    else if (c.element) { if (f) parts.push(f); parts.push(lowName(c.element) + (c.particle ? ` ${c.particle}` : '')); }
+    else if (c.molecule) { parts.push(toSubscript(c.molecule), MOLECULE_INFO[c.molecule].name); }
+    else if (c.reaction) parts.push(equationText(c.reaction, null));
+    return parts.length ? parts.join(' · ') : 'nothing selected yet';
+  }
+
+  // Three suggestions that fit the current view.
+  function ionChips(){
+    const c = assistantContext;
+    const generic = ["What's a valence electron?", 'What are protons, neutrons and electrons?', 'What is electronegativity?'];
+    const stateChip = (formula, el) => {
+      const n = oxidationBySymbol(formula)[el];
+      return n ? `Why is ${lowName(el)} ${Math.abs(n)}${n > 0 ? '+' : '−'}?` : null;
+    };
+    if (c.bond) {
+      const b = c.bond, [lo, hi] = ELEMENTS[b.elA].en <= ELEMENTS[b.elB].en ? [b.elA, b.elB] : [b.elB, b.elA];
+      if (b.type === 'ionic') {
+        const n = c.molecule ? Math.abs(oxidationBySymbol(c.molecule)[lo]) : 1;
+        return [`Why does ${lowName(lo)} give ${n === 1 ? 'its electron' : 'its electrons'} away?`, "What's the electronegativity gap here?", 'How is this different from a covalent bond?'];
+      }
+      return [b.elA === b.elB ? `Why do two ${lowName(b.elA)} atoms share electrons?` : `Why do ${lowName(lo)} and ${lowName(hi)} share electrons?`,
+        "What's the electronegativity gap here?", 'How is this different from an ionic bond?'];
+    }
+    if (c.shell) {
+      return c.shell.isValence
+        ? ["What's a valence electron?", 'How many electrons does this shell hold?', 'What are protons, neutrons and electrons?']
+        : ["Why don't inner shells take part in bonding?", "What's a valence electron?", 'How many electrons does this shell hold?'];
+    }
+    if (c.particle) return ['What are protons, neutrons and electrons?', "What's a valence electron?", c.element ? `How many protons does ${lowName(c.element)} have?` : 'What is electronegativity?'];
+    if (c.element) {
+      const sc = c.molecule ? stateChip(c.molecule, c.element) : null;
+      return [sc || `How many electrons does ${lowName(c.element)} have?`, "What's a valence electron?", 'What are protons, neutrons and electrons?'];
+    }
+    if (c.molecule) {
+      const el = elementsOf(c.molecule).find(e => stateChip(c.molecule, e));
+      const hasBonds = MOLECULES[c.molecule].bonds.length > 0;
+      return el && hasBonds
+        ? [stateChip(c.molecule, el), `What kind of bond holds ${toSubscript(c.molecule)} together?`, 'What is electronegativity?']
+        : generic;
+    }
+    return ['Why does this need balancing?', 'What kind of reaction is this?', 'Which bonds break and form?'];
+  }
+  // ION-ENGINE-END
+
+  const ionApp = document.getElementById('app');
+  const ionBtn = document.getElementById('ionBtn');
+  const ionPanel = document.getElementById('ionPanel');
+  const ionMessages = document.getElementById('ionMessages');
+  const ionContextEl = document.getElementById('ionContext');
+  const ionChipsEl = document.getElementById('ionChips');
+  const ionForm = document.getElementById('ionForm');
+  const ionInput = document.getElementById('ionInput');
+  const ionSendBtn = document.getElementById('ionSend');
+  let ionGreeted = false, ionBusy = false, ionChipKey = '', ionShrunk = false;
+
+  // The button and panel sit above the HUD in the chamber (which is why their offset follows the
+  // HUD's height) and in the bottom-right corner of the detail view, which covers the HUD.
+  function updateIonLayout(){
+    if (!ionLayoutReady) return;
+    const detailOpen = detailView.classList.contains('open');
+    const hudH = hud.hidden ? 0 : hud.offsetHeight;
+    ionApp.style.setProperty('--ion-bottom', (detailOpen ? 20 : Math.max(hudH + 16, 72)) + 'px');
+    ionApp.classList.toggle('detail-open', detailOpen);
+
+    // On desktop the chamber's canvas gives up a strip for the open panel, so the whole reaction
+    // refits beside it instead of hiding behind it. (In the detail view the atom is centred and
+    // the panel simply overlays the empty right side; on phones the sheet overlays the canvas.)
+    const shrink = ionApp.classList.contains('ion-open') && !detailOpen && window.matchMedia('(min-width: 701px), (orientation: landscape)').matches;
+    if (shrink !== ionShrunk) {
+      ionShrunk = shrink;
+      const zoom = focusState ? null : cam.radius / computeFitRadius();   // keep the student's own zoom level
+      ionApp.classList.toggle('ion-shrink', shrink);
+      resize();
+      if (zoom !== null) cam.radius = Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, computeFitRadius() * zoom));
+    }
+  }
+
+  function ionAddMessage(role, text){
+    const div = document.createElement('div');
+    div.className = `ion-msg ion-msg-${role}`;
+    div.textContent = text;
+    ionMessages.appendChild(div);
+    ionMessages.scrollTop = ionMessages.scrollHeight;
+    return div;
+  }
+
+  function ionSend(raw){
+    const text = raw.trim();
+    if (!text || ionBusy) return;
+    ionAddMessage('user', text);
+    ionInput.value = '';
+    ionBusy = true; ionSendBtn.disabled = true;
+    const reply = ionAnswer(text);   // answered against what is on screen right now
+    const typing = document.createElement('div');
+    typing.className = 'ion-msg ion-msg-bot ion-typing';
+    typing.setAttribute('aria-label', 'Ion is typing');
+    typing.innerHTML = '<i></i><i></i><i></i>';
+    ionMessages.appendChild(typing);
+    ionMessages.scrollTop = ionMessages.scrollHeight;
+    setTimeout(() => {
+      typing.remove();
+      ionAddMessage('bot', reply);
+      ionBusy = false; ionSendBtn.disabled = false;
+    }, 600);
+  }
+
+  ionRefresh = function(){
+    ionContextEl.textContent = 'Talking about: ' + ionContextLabel();
+    const chips = ionChips(), key = chips.join('|');
+    if (key !== ionChipKey) {
+      ionChipKey = key;
+      ionChipsEl.innerHTML = '';
+      chips.forEach(label => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'ion-chip'; b.textContent = label;
+        b.addEventListener('click', () => ionSend(label));
+        ionChipsEl.appendChild(b);
+      });
+    }
+    updateIonLayout();
+  };
+
+  function openIon(){
+    ionPanel.classList.add('open');
+    ionPanel.setAttribute('aria-hidden', 'false');
+    ionApp.classList.add('ion-open');
+    ionBtn.setAttribute('aria-expanded', 'true');
+    if (!ionGreeted) {
+      ionGreeted = true;
+      ionAddMessage('bot', `Hi, I'm Ion, your lab assistant! You're looking at ${ionSceneSummary()} — ask me why it works, or tap a suggestion below.`);
+    }
+    ionRefresh();
+    // Don't pop the on-screen keyboard over the 3D view on touch devices.
+    if (!window.matchMedia('(pointer: coarse)').matches) ionInput.focus({ preventScroll:true });
+  }
+  function closeIon(){
+    ionPanel.classList.remove('open');
+    ionPanel.setAttribute('aria-hidden', 'true');
+    ionApp.classList.remove('ion-open');
+    ionBtn.setAttribute('aria-expanded', 'false');
+    updateIonLayout();
+    ionBtn.focus({ preventScroll:true });
+  }
+  ionBtn.addEventListener('click', openIon);
+  document.getElementById('ionClose').addEventListener('click', closeIon);
+  ionForm.addEventListener('submit', e => { e.preventDefault(); ionSend(ionInput.value); });
+
+  ionLayoutReady = true;
+  if (window.ResizeObserver) new ResizeObserver(updateIonLayout).observe(hud);
+  ionRefresh();
 
   selectReaction();
 })();
